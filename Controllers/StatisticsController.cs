@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TetrisAPI.Libraries;
 using TetrisAPI.Models;
 using TetrisAPI.Services;
 
@@ -15,9 +16,10 @@ namespace TetrisAPI.Controllers
             this.statisticsService = statisticsService;
         }
 
-        [HttpGet]
-        public Game Get(int gameId) {
-            return statisticsService.GetGame(gameId);
+        [HttpGet("{gameid}")]
+        public IActionResult Get(int gameid) {
+            var game = statisticsService.GetGame(gameid);
+            return game != null ? Ok(game) : Util.GenerateError($"Could not find game with id: {gameid}");
         }
     }
 }

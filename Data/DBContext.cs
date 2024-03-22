@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TetrisAPI.Models;
 
 namespace TetrisAPI.Data
 {
-    public class DBContext : DbContext
+    public class DBContext : IdentityDbContext<IdentityUser>
     {
         public DBContext(DbContextOptions<DBContext> options) : base(options)
         {
@@ -17,10 +19,9 @@ namespace TetrisAPI.Data
             modelBuilder.Entity<Game>()
                 .HasOne(t => t.User)
                 .WithMany(t => t.Games)
-                .HasForeignKey(fk => fk.UserId);
+                .HasForeignKey(f => f.UserId);
         }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<Game> GameInfo { get; set; }
     }
 }

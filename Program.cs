@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TetrisAPI.Data;
 using TetrisAPI.Services;
@@ -7,11 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllersWithViews();
 
-// Connect to database
 builder.Services.AddDbContext<DBContext>(options => 
     options.UseMySQL(builder.Configuration.GetConnectionString("Default")),
     contextLifetime: ServiceLifetime.Singleton,
     optionsLifetime: ServiceLifetime.Singleton);
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IStatisticsService, StatisticsService>();

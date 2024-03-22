@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,7 +14,7 @@ namespace TetrisAPI.Models
 
         public int Score { get; set; }
 
-        public int UserId;
-        public required User User;
+        public required string UserId;
+        public required ApplicationUser User;
     }
 }                                                           

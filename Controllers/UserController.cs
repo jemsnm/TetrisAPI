@@ -21,17 +21,17 @@ namespace TetrisAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetUser([FromRoute] int id)
+        public IActionResult GetUser([FromRoute] string id)
         {
-            var user = userService.GetUser(id);
+            var user = userService.GetUserAsync(id);
             return user != null ? Ok(user) : Util.GenerateError($"Could not find user with id: {id}");
         }
 
-        //[HttpPost]
-        //public string Login()
-        //{
-        //    // will return token, token will be deleted after some random time to be decided
-           
-        //}
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] User user)
+        {
+            var userToken = await userService.SaveUserAsync(user);
+            return userToken != null ? Ok(userToken) : Util.GenerateError($"Cannot return token for user:{user.UserName}");
+        }
     }
 }

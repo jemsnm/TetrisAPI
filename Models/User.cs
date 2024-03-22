@@ -1,23 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TetrisAPI.Models
 {
-    [Table("users")]
     public class User
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public required string UserName { get; set; }
 
-        public required string Name { get; set; }
-
-        [DataType(DataType.Password)]
         public required string Password { get; set; }
 
+        [RegularExpression("^[a-zA-Z0-9_\\.-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", ErrorMessage = "E-mail is not valid")]
         public required string Email { get; set; }
-
-        public required List<Game> Games;
     }
 }

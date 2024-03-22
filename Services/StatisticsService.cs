@@ -8,16 +8,16 @@ namespace TetrisAPI.Services
         /// <summary>
         /// Get tetris info by an id
         /// </summary>
-        /// <param name="tetrisId"></param>
+        /// <param name="gameId"></param>
         /// <returns></returns>
-        Game GetGame(int tetrisId);
+        Game? GetGame(int gameId);
 
         /// <summary>
         /// Get all tetris games for a user
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        IEnumerable<Game> GetGameForUser(int userId);
+        IEnumerable<Game> GetGameForUser(string userId);
     }
 
     public class StatisticsService : IStatisticsService
@@ -29,16 +29,10 @@ namespace TetrisAPI.Services
             this.context = context;       
         }
 
-        public Game GetGame(int tetrisId)
-        {
-            return context.GameInfo
-                .Where(t => t.Id.Equals(tetrisId)).First();
-        }
+        public Game? GetGame(int gameId) =>
+            context.GameInfo.Find(gameId);
 
-        public IEnumerable<Game> GetGameForUser(int userId)
-        {
-            return context.GameInfo
-                .Where(t => t.UserId.Equals(userId));
-        }
+        public IEnumerable<Game> GetGameForUser(string userId) =>
+            context.GameInfo.Where(t => t.User.Id.Equals(userId));
     }
 }
