@@ -8,7 +8,7 @@ using TetrisAPI.Services;
 
 namespace TetrisAPI.Controllers
 {
-    
+
     [ApiController]
     [Route("[controller]")]
     public class UserController : ControllerBase
@@ -21,17 +21,17 @@ namespace TetrisAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetUser([FromRoute] string id)
+        public async Task<IActionResult> GetUser([FromRoute] string id)
         {
-            var user = userService.GetUserAsync(id);
+            var user = await userService.GetUserAsync(id);
             return user != null ? Ok(user) : Util.GenerateError($"Could not find user with id: {id}");
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            var userToken = await userService.SaveUserAsync(user);
-            return userToken != null ? Ok(userToken) : Util.GenerateError($"Cannot return token for user:{user.UserName}");
+            var createdUser = await userService.CreateUserAsync(user);
+            return createdUser != null ? Ok(createdUser) : Util.GenerateError($"User cannot be created");
         }
     }
 }

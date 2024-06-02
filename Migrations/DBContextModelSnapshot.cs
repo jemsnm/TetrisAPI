@@ -9,7 +9,7 @@ using TetrisAPI.Data;
 
 namespace TetrisAPI.Migrations
 {
-    [DbContext(typeof(DBContext))]
+    [DbContext(typeof(ApplicationDBContext))]
     partial class DBContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -236,7 +236,7 @@ namespace TetrisAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("games");
+                    b.ToTable("games", (string)null);
                 });
 
             modelBuilder.Entity("TetrisAPI.Models.User", b =>

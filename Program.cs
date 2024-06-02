@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TetrisAPI.Data;
+using TetrisAPI.Models;
 using TetrisAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,15 +9,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<DBContext>(options => 
-    options.UseMySQL(builder.Configuration.GetConnectionString("Default")),
+var connectionString = builder.Configuration.GetConnectionString("Default");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new Exception("Connection string 'Default' is missing in configuration.");
+}
+
+builder.Services.AddDbContext<ApplicationDBContext>(options =>
+    options.UseMySQL(connectionString)
+    .EnableDetailedErrors(),
     contextLifetime: ServiceLifetime.Singleton,
     optionsLifetime: ServiceLifetime.Singleton);
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IStatisticsService, StatisticsService>();
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDBContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 

@@ -10,7 +10,7 @@ using TetrisAPI.Data;
 
 namespace TetrisAPI.Migrations
 {
-    [DbContext(typeof(DBContext))]
+    [DbContext(typeof(ApplicationDBContext))]
     [Migration("20240302210736_RemoveUsersTableAndSetForeignKey")]
     partial class RemoveUsersTableAndSetForeignKey
     {

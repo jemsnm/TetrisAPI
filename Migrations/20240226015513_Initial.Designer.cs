@@ -9,7 +9,7 @@ using TetrisAPI.Data;
 
 namespace TetrisAPI.Migrations
 {
-    [DbContext(typeof(DBContext))]
+    [DbContext(typeof(ApplicationDBContext))]
     [Migration("20240226015513_Initial")]
     partial class Initial
     {

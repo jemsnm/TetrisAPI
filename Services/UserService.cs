@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Web.Http;
 using TetrisAPI.Data;
 using TetrisAPI.Models;
+using ZstdSharp.Unsafe;
 
 namespace TetrisAPI.Services
 {
@@ -19,53 +21,68 @@ namespace TetrisAPI.Services
         Task<IdentityUser?> GetUserAsync(string id);
 
         /// <summary>
-        /// Saves a user, generates a token and returns the token
+        /// Creates a new user and genereates a token
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<string> SaveUserAsync(User user);
+        Task<IdentityUser?> CreateUserAsync(User user);
     }
 
     public class UserService : IUserService
     {
-        private readonly DBContext context;
-        private readonly UserManager<IdentityUser>  userManager;
+        private readonly ApplicationDBContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserService(DBContext context, UserManager<IdentityUser> userManager) 
+        public UserService(ApplicationDBContext context,
+            UserManager<ApplicationUser> userManager)
         {
-            this.context = context;
-            this.userManager = userManager;
+            _context = context;
+            _userManager = userManager;
         }
 
         /// <summary>
         /// See interface
         /// </summary>
-        public async Task<IdentityUser?> GetUserAsync(string id) =>
-            await userManager.FindByIdAsync(id);
-
-        /// <summary>
-        /// See interface
-        /// </summary>
-        public async Task<string> SaveUserAsync(User user) 
+        public async Task<IdentityUser?> GetUserAsync(string id)
         {
-            var identityUser = new IdentityUser()
+            var user = await _userManager.FindByIdAsync(id);
+            if (user!=null) user.Token = await GetTokenForUser(user);
+            return user;
+        }
+        
+        public async Task<IdentityUser?> CreateUserAsync(User user)
+        {
+            var identityUser = new ApplicationUser
             {
                 UserName = user.UserName,
                 Email = user.Email
             };
 
-            context.Users.Add(identityUser);
-;           await userManager.CreateAsync(identityUser, user.Password);
+            var result = await _userManager.CreateAsync(identityUser, user.Password);
+            if (result.Succeeded)
+            {
+                var token = await GenerateUserToken(identityUser);
+                await SetUserToken(identityUser, token);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return null;
+            }
 
-            return await GenerateUserTokenAsync(identityUser);
+            return await GetUserAsync(identityUser.Id);
         }
 
-        /// <summary>
-        /// Generates and returns a user token
-        /// </summary>
-        /// <param name="identityUser"></param>
-        /// <returns></returns>
-        private async Task<string> GenerateUserTokenAsync(IdentityUser identityUser) =>
-            await userManager.GenerateUserTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser");
+        internal async Task<string> GenerateUserToken(ApplicationUser identityUser)
+        {
+            var token = await _userManager.GenerateUserTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser");
+            return token;
+        }
+
+        internal async Task SetUserToken(ApplicationUser identityUser, string token) =>
+            await _userManager.SetAuthenticationTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser", token);
+
+        internal async Task<string?> GetTokenForUser(ApplicationUser identityUser) =>
+            await _userManager.GetAuthenticationTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser");
     }
 }

@@ -22,9 +22,9 @@ namespace TetrisAPI.Services
 
     public class StatisticsService : IStatisticsService
     {
-        private readonly DBContext context;
+        private readonly ApplicationDBContext context;
 
-        public StatisticsService(DBContext context)
+        public StatisticsService(ApplicationDBContext context)
         {
             this.context = context;       
         }

@@ -5,9 +5,9 @@ using TetrisAPI.Models;
 
 namespace TetrisAPI.Data
 {
-    public class DBContext : IdentityDbContext<IdentityUser>
+    public class ApplicationDBContext : IdentityDbContext<IdentityUser>
     {
-        public DBContext(DbContextOptions<DBContext> options) : base(options)
+        public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
 
         }
