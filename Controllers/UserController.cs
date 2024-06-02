@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -8,7 +9,6 @@ using TetrisAPI.Services;
 
 namespace TetrisAPI.Controllers
 {
-
     [ApiController]
     [Route("[controller]")]
     public class UserController : ControllerBase
@@ -28,10 +28,17 @@ namespace TetrisAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] User user)
+        public async Task<IActionResult> CreateUser([FromBody] SignUpUser user)
         {
             var createdUser = await userService.CreateUserAsync(user);
             return createdUser != null ? Ok(createdUser) : Util.GenerateError($"User cannot be created");
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUser user)
+        {
+            var token  = await userService.LoginUserAsync(user);
+            return token != null ? Ok(Util.GenerateTokenJsonString(token)) : Util.GenerateError($"User cannot be logged in");
         }
     }
 }

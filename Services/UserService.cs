@@ -21,36 +21,39 @@ namespace TetrisAPI.Services
         Task<IdentityUser?> GetUserAsync(string id);
 
         /// <summary>
-        /// Creates a new user and genereates a token
+        /// Creates a new user
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Task<IdentityUser?> CreateUserAsync(User user);
+        Task<IdentityUser?> CreateUserAsync(SignUpUser user);
+
+        /// <summary>
+        /// Login a user and return a token
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns></returns>
+        Task<string?> LoginUserAsync(LoginUser userInfo);
     }
 
     public class UserService : IUserService
     {
         private readonly ApplicationDBContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
         public UserService(ApplicationDBContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
-        /// <summary>
-        /// See interface
-        /// </summary>
-        public async Task<IdentityUser?> GetUserAsync(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user!=null) user.Token = await GetTokenForUser(user);
-            return user;
-        }
+        public async Task<IdentityUser?> GetUserAsync(string id) => 
+            await _userManager.FindByIdAsync(id);
         
-        public async Task<IdentityUser?> CreateUserAsync(User user)
+        public async Task<IdentityUser?> CreateUserAsync(SignUpUser user)
         {
             var identityUser = new ApplicationUser
             {
@@ -61,8 +64,6 @@ namespace TetrisAPI.Services
             var result = await _userManager.CreateAsync(identityUser, user.Password);
             if (result.Succeeded)
             {
-                var token = await GenerateUserToken(identityUser);
-                await SetUserToken(identityUser, token);
                 await _context.SaveChangesAsync();
             }
             else
@@ -73,16 +74,33 @@ namespace TetrisAPI.Services
             return await GetUserAsync(identityUser.Id);
         }
 
-        internal async Task<string> GenerateUserToken(ApplicationUser identityUser)
+        public async Task<string?> LoginUserAsync(LoginUser userInfo)
         {
-            var token = await _userManager.GenerateUserTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser");
-            return token;
+            var user = await GetUserByEmailAsync(userInfo.Email);
+            if (user!= null) {
+                var result = await _signInManager.PasswordSignInAsync(user, userInfo.Password, false, false);
+                if (result.Succeeded)
+                {
+                    var token = await GenerateUserTokenAsync(user);
+                    await SetUserTokenAsync(user, token);
+                    await _context.SaveChangesAsync();
+                    return token;
+                }
+            }
+
+            return null;
         }
 
-        internal async Task SetUserToken(ApplicationUser identityUser, string token) =>
-            await _userManager.SetAuthenticationTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser", token);
+        internal async Task<ApplicationUser?> GetUserByEmailAsync(string email) =>
+            await _userManager.FindByEmailAsync(email);
 
-        internal async Task<string?> GetTokenForUser(ApplicationUser identityUser) =>
-            await _userManager.GetAuthenticationTokenAsync(identityUser, TokenOptions.DefaultProvider, "AddUser");
+        internal async Task<string> GenerateUserTokenAsync(ApplicationUser identityUser) =>
+            await _userManager.GenerateUserTokenAsync(identityUser, TokenOptions.DefaultProvider, "UserLogin");
+
+        internal async Task SetUserTokenAsync(ApplicationUser identityUser, string token) =>
+            await _userManager.SetAuthenticationTokenAsync(identityUser, TokenOptions.DefaultProvider, "UserLogin", token);
+
+        internal async Task<string?> GetTokenForUserAsync(ApplicationUser identityUser) =>
+            await _userManager.GetAuthenticationTokenAsync(identityUser, TokenOptions.DefaultProvider, "UserLogin");
     }
 }

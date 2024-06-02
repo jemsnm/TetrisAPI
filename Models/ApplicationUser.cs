@@ -6,8 +6,5 @@ namespace TetrisAPI.Models
     public class ApplicationUser : IdentityUser
     {
         public ICollection<Game>? Games { get; set; }
-
-        [NotMapped]
-        public string? Token { get; set; }
     }
 }

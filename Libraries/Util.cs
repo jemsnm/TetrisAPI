@@ -18,5 +18,8 @@ namespace TetrisAPI.Libraries
                 StatusCode = (int)code
             };
         }
+
+        public static string GenerateTokenJsonString(string token) =>
+            JsonSerializer.Serialize(new { Token = token });
     }
 }
