@@ -20,6 +20,6 @@ namespace TetrisAPI.Libraries
         }
 
         public static string GenerateTokenJsonString(string token) =>
-            JsonSerializer.Serialize(new { Token = token });
+            JsonSerializer.Serialize(new { token = token });
     }
 }
